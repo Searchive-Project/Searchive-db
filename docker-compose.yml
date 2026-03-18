@@ -81,8 +81,8 @@ services:
     networks:
       - searchive-network
 
-  # ============================================
-  # Elasticsearch - Search Engine
+# ============================================
+  # Elasticsearch - Nori 플러그인 자동 설치 추가
   # ============================================
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -98,6 +98,14 @@ services:
       - "9300:9300"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
+    # 컨테이너 시작 시 Nori가 없으면 설치하고 실행하도록 변경
+    command: >
+      sh -c "
+        if [ ! -d plugins/analysis-nori ]; then
+          bin/elasticsearch-plugin install --batch analysis-nori;
+        fi;
+        /usr/local/bin/docker-entrypoint.sh elasticsearch
+      "
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
